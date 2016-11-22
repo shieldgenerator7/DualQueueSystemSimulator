@@ -50,3 +50,4 @@ Temporary Items
 Debug/Simulator.o
 *.d
 Debug/makefile
+*.o

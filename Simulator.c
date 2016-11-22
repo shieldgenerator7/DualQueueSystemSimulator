@@ -2,12 +2,15 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
+#include <stdlib.h>
 
 //
 // Global Variables
 //
 double lambda;//arrival rate (packets/hr), changes with each Simulation
 double mu;//service rate (packets/hr), changes with each Simulation
+
+#define PACKET_AMOUNT 100
 
 //
 // Packet
@@ -41,11 +44,11 @@ void resetQueue(Queue *q){
 
 void servicePacket(Packet *p, double timeStarted){
 	p->timeStarted = timeStarted;
-	p->timeEntered = timeStarted + 60/mu;// 60/mu is minutes per packet
+	p->timeFinished = timeStarted + 60/mu;// 60/mu is minutes per packet
 }
 
 void serviceNextPacket(Queue *q, double timeStarted){
-	servicePacket(&(q->packetList[q->currentServiceIndex]), timeStarted);
+	servicePacket((q->packetList[q->currentServiceIndex]), timeStarted);
 }
 
 void addToQueue(Queue *q, Packet *p){
@@ -63,7 +66,7 @@ void addToQueue(Queue *q, Packet *p){
 void rejectPacket(Packet *p){
 	p->accepted = 0;
 	p->timeFinished = p->timeEntered;
-	printf("REJECTED: p.timeEntered: %lf, %d\n",p->timeEntered,p->accepted);
+	//printf("REJECTED: p.timeEntered: %lf, %d\n",p->timeEntered,p->accepted);
 }
 
 void removeServicedPacket(Queue *q){
@@ -77,7 +80,7 @@ void removeServicedPacket(Queue *q){
 typedef struct{
 	double lambda;//the arrival rate (packets/hr)
 	double mu;//the service rate (packets/hr)
-	Packet packetList[100];
+	Packet packetList[PACKET_AMOUNT];
 	char pas;//the first letter of the PAS it used: "r" = random, "s" = shortest queue
 }Iteration;
 
@@ -88,17 +91,20 @@ void simulate(Iteration *iteration){
 	resetQueue(&q1);
 	resetQueue(&q2);
 	//Generate packets
-	generatePacketList(100, iteration->packetList);
+	generatePacketList(PACKET_AMOUNT, iteration->packetList);
 	double time = 0.0;//how much time has elapsed
 	int packetsSent = 0;//how many of the planned packets have been sent
-	while (packetsSent < 100 || q1.numberPacketsInQueue > 0 || q2.numberPacketsInQueue > 0){
+	while (packetsSent < PACKET_AMOUNT || q1.numberPacketsInQueue > 0 || q2.numberPacketsInQueue > 0){
 		//Determine which queue has the next event to process
-		double nextPacket = iteration->packetList[packetsSent].timeEntered;
-		double packet1 = 10000;
+		double nextPacket = PACKET_AMOUNT*10;
+		if (packetsSent < PACKET_AMOUNT){
+			nextPacket = iteration->packetList[packetsSent].timeEntered;
+		}
+		double packet1 = PACKET_AMOUNT*10;
 		if (q1.numberPacketsInQueue > 0){
 			packet1 = q1.packetList[q1.currentServiceIndex]->timeFinished;
 		}
-		double packet2 = 10000;
+		double packet2 = PACKET_AMOUNT*10;
 		if (q2.numberPacketsInQueue > 0){
 			packet2 = q2.packetList[q2.currentServiceIndex]->timeFinished;
 		}
@@ -172,7 +178,7 @@ void simulate(Iteration *iteration){
 // Simulation
 //
 typedef struct {
-	Iteration iterationList[100];
+	Iteration iterationList[10];
 	char pas;//the first letter of the PAS it used: "r" = random, "s" = shortest queue
 }Simulation;
 
@@ -184,8 +190,8 @@ void startSimulation(Simulation s, double lambda, double mu){
 		//run the simulation
 		simulate(&iteration);
 		int acceptedPackets = 0;
-		for (int i = 0; i < 100; i++){
-			if (iteration.packetList[i].accepted == 1){
+		for (int j = 0; j < PACKET_AMOUNT; j++){
+			if (iteration.packetList[j].accepted == 1){
 				acceptedPackets++;
 			}
 		}
@@ -201,8 +207,8 @@ int main (){
 	Simulation simulR = (Simulation){.pas='r'};
 	Simulation simulS = (Simulation){.pas='s'};
 	//For each value of lambda
-	lambda = 100;
-	mu = 100;
+	lambda = PACKET_AMOUNT;
+	mu = 27;
 	//for (lambda = 1; lambda <= 100; lambda*=10){
 	//Random PAS Simulation
 	startSimulation(simulR, lambda, mu);
