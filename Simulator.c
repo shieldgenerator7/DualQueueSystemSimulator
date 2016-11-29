@@ -10,7 +10,8 @@
 double lambda;//arrival rate (packets/hr), changes with each Simulation
 double mu;//service rate (packets/hr), changes with each Simulation
 
-#define PACKET_AMOUNT 100
+#define PACKET_AMOUNT 1000
+#define INITIAL_MU 270
 
 //
 // Packet
@@ -208,7 +209,7 @@ int main (){
 	Simulation simulS = (Simulation){.pas='s'};
 	//For each value of lambda
 	lambda = PACKET_AMOUNT;
-	mu = 27;
+	mu = INITIAL_MU;
 	//for (lambda = 1; lambda <= 100; lambda*=10){
 	//Random PAS Simulation
 	startSimulation(simulR, lambda, mu);
