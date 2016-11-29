@@ -10,8 +10,8 @@
 double lambda;//arrival rate (packets/hr), changes with each Simulation
 double mu;//service rate (packets/hr), changes with each Simulation
 
-#define PACKET_AMOUNT 1000
-#define INITIAL_MU 270
+#define PACKET_AMOUNT 10000
+#define INITIAL_MU 2700
 
 //
 // Packet
@@ -183,10 +183,10 @@ typedef struct {
 	char pas;//the first letter of the PAS it used: "r" = random, "s" = shortest queue
 }Simulation;
 
-void startSimulation(Simulation s, double lambda, double mu){
+void startSimulation(Simulation *s, double lambda, double mu){
 	//for each iteration
 	for (int i = 0; i<10; i++){
-		Iteration iteration = (Iteration){.lambda=lambda, .mu=mu, .pas = s.pas};
+		Iteration iteration = (Iteration){.lambda=lambda, .mu=mu, .pas = s->pas};
 		printf("\n==Iteration #%d==\n",(i+1));
 		//run the simulation
 		simulate(&iteration);
@@ -205,8 +205,10 @@ void startSimulation(Simulation s, double lambda, double mu){
 //
 
 int main (){
-	Simulation simulR = (Simulation){.pas='r'};
-	Simulation simulS = (Simulation){.pas='s'};
+	Simulation *simulR = malloc(sizeof(Simulation));
+	Simulation *simulS = malloc(sizeof(Simulation));
+	*simulR = (Simulation){.pas='r'};
+	*simulS = (Simulation){.pas='s'};
 	//For each value of lambda
 	lambda = PACKET_AMOUNT;
 	mu = INITIAL_MU;
